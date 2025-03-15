@@ -1,0 +1,13 @@
+// ...existing code...
+const initializeClients = require('./middleware/clientInitializer');
+
+// Initialize app
+const app = express();
+// ...existing code...
+
+// Apply middleware
+app.use(initializeClients);
+// ...existing code...
+
+// Routes
+// ...existing code...
