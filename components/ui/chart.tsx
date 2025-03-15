@@ -1,32 +1,102 @@
-export const Chart = ({ children }) => {
-  return <div className="relative">{children}</div>
-}
+"use client"
 
-export const ChartContainer = ({ children }) => {
-  return <div className="relative">{children}</div>
-}
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
-export const ChartTooltip = ({ children }) => {
+interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function ChartContainer({
+  children,
+  className,
+  ...props
+}: ChartContainerProps) {
   return (
-    <div className="absolute z-10 bg-white border border-slate-200 rounded-md p-2 text-sm text-slate-800 shadow-md">
+    <div className={cn("chart-container", className)} {...props}>
       {children}
     </div>
   )
 }
 
-export const ChartTooltipContent = ({ children }) => {
-  return <div>{children}</div>
-}
+interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const ChartLegend = ({ children, className }) => {
-  return <div className={`flex ${className}`}>{children}</div>
-}
-
-export const ChartLegendItem = ({ name, color }) => {
+export function Chart({ children, className, ...props }: ChartProps) {
   return (
-    <div className="flex items-center gap-2 mr-4">
-      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }}></div>
-      <span className="text-sm text-slate-600">{name}</span>
+    <div className={cn("chart h-[350px] w-full", className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+interface ChartTooltipProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function ChartTooltip({
+  children,
+  className,
+  ...props
+}: ChartTooltipProps) {
+  return (
+    <div
+      className={cn(
+        "chart-tooltip rounded-lg border border-slate-200 bg-white p-2 shadow-sm",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+interface ChartTooltipContentProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function ChartTooltipContent({
+  children,
+  className,
+  ...props
+}: ChartTooltipContentProps) {
+  return (
+    <div className={cn("chart-tooltip-content", className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+interface ChartLegendProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function ChartLegend({
+  children,
+  className,
+  ...props
+}: ChartLegendProps) {
+  return (
+    <div
+      className={cn("chart-legend flex flex-wrap items-center gap-4", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+interface ChartLegendItemProps extends React.HTMLAttributes<HTMLDivElement> {
+  name: string
+  color: string
+}
+
+export function ChartLegendItem({
+  name,
+  color,
+  className,
+  ...props
+}: ChartLegendItemProps) {
+  return (
+    <div className={cn("chart-legend-item flex items-center", className)} {...props}>
+      <div
+        className="mr-2 h-3 w-3 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+      <span className="text-sm font-medium text-slate-700">{name}</span>
     </div>
   )
 }

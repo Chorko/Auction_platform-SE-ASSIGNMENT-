@@ -104,7 +104,7 @@ export default function BiddingActivityChart({ chartType = "area" }: BiddingActi
                   tickLine={{ stroke: "#cbd5e1" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                 />
-                <Tooltip content={<CustomTooltip active={undefined} payload={undefined} label={undefined} />} />
+                <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
                   dataKey="bids"
@@ -159,7 +159,7 @@ export default function BiddingActivityChart({ chartType = "area" }: BiddingActi
                   tickLine={{ stroke: "#cbd5e1" }}
                   axisLine={{ stroke: "#cbd5e1" }}
                 />
-                <Tooltip content={<CustomBarTooltip active={undefined} payload={undefined} label={undefined} />} />
+                <Tooltip content={<CustomBarTooltip />} />
                 <Bar dataKey="bids" fill="#3b82f6" />
                 <Bar dataKey="wins" fill="#6366f1" />
               </BarChart>
@@ -192,6 +192,16 @@ export default function BiddingActivityChart({ chartType = "area" }: BiddingActi
                   bottom: 20,
                 }}
               >
+                <defs>
+                  <linearGradient id="colorAvgBid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                  </linearGradient>
+                  <linearGradient id="colorMarketAvg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis
                   dataKey="month"
@@ -205,10 +215,30 @@ export default function BiddingActivityChart({ chartType = "area" }: BiddingActi
                   tick={{ fill: "#64748b" }}
                   tickLine={{ stroke: "#cbd5e1" }}
                   axisLine={{ stroke: "#cbd5e1" }}
+                  tickFormatter={(value) => `$${value}`}
                 />
-                <Tooltip content={<CustomLineTooltip active={undefined} payload={undefined} label={undefined} />} />
-                <Line type="monotone" dataKey="avgBid" stroke="#3b82f6" activeDot={{ r: 8 }} strokeWidth={2} />
-                <Line type="monotone" dataKey="marketAvg" stroke="#ef4444" strokeWidth={2} />
+                <Tooltip content={<CustomLineTooltip />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="avgBid" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
+                  dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+                  activeDot={{ r: 8, strokeWidth: 0, fill: "#3b82f6" }} 
+                  animationDuration={1500}
+                  animationEasing="ease-in-out"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="marketAvg" 
+                  stroke="#ef4444" 
+                  strokeWidth={3}
+                  dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+                  activeDot={{ r: 8, strokeWidth: 0, fill: "#ef4444" }}
+                  animationDuration={1500}
+                  animationEasing="ease-in-out"
+                  animationBegin={300}
+                />
               </LineChart>
             </ResponsiveContainer>
           </Chart>
@@ -244,7 +274,7 @@ export default function BiddingActivityChart({ chartType = "area" }: BiddingActi
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomPieTooltip active={undefined} payload={undefined} />} />
+                <Tooltip content={<CustomPieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
           </Chart>
