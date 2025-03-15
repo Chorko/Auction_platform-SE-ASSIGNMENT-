@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
@@ -8,27 +8,93 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowUp, Bolt, Gavel, Lock, Zap } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
+         AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
-export default function BidControls({ currentBid, bidIncrement, onBidIncrementChange }) {
-  const [bidMethod, setBidMethod] = useState("quick")
+interface BidControlsProps {
+  currentBid: number;
+  bidIncrement: number;
+  onBidIncrementChange: (increment: number) => void;
+  timeLeft?: number; // Add time remaining in seconds
+}
+
+export default function BidControls({ currentBid, bidIncrement, onBidIncrementChange, timeLeft = 0 }: BidControlsProps) {
+  const [, setBidMethod] = useState("quick")
   const [customBid, setCustomBid] = useState(currentBid + bidIncrement)
   const [maxBid, setMaxBid] = useState(currentBid + bidIncrement * 5)
   const [autoBidEnabled, setAutoBidEnabled] = useState(false)
   const [sniperBidEnabled, setSniperBidEnabled] = useState(false)
+  const [bidError, setBidError] = useState("")
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [pendingBid, setPendingBid] = useState(0)
+  const [bidHistory, setBidHistory] = useState<Array<{amount: number, timestamp: Date}>>([])
+  const [isAutoBidding, setIsAutoBidding] = useState(false)
+
+  // Auto-refresh current bid every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // In a real app, fetch latest bid from server
+      console.log("Refreshing current bid...")
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Auto-bid logic
+  useEffect(() => {
+    if (autoBidEnabled && isAutoBidding && currentBid < maxBid) {
+      const timeout = setTimeout(() => {
+        const nextBid = Math.min(currentBid + bidIncrement, maxBid)
+        handleBidConfirm(nextBid)
+      }, 2000)
+      return () => clearTimeout(timeout)
+    }
+  }, [currentBid, autoBidEnabled, isAutoBidding, maxBid])
 
   const handleQuickBid = () => {
     // In a real app, this would submit the bid to the server
     console.log(`Placing quick bid: $${currentBid + bidIncrement}`)
   }
 
+  const handleCustomBidChange = (e: { target: { value: any } }) => {
+    const value = Number(e.target.value)
+    setCustomBid(value)
+    // Clear error when user starts typing
+    setBidError("")
+  }
+
   const handleCustomBid = () => {
-    // In a real app, this would submit the bid to the server
-    console.log(`Placing custom bid: $${customBid}`)
+    handleBidAttempt(customBid)
   }
 
   const handleMaxBid = () => {
-    // In a real app, this would submit the max bid to the server
-    console.log(`Setting max bid: $${maxBid}`)
+    handleBidAttempt(maxBid)
+  }
+
+  const handleBidAttempt = (amount: number) => {
+    setPendingBid(amount)
+    setShowConfirmDialog(true)
+  }
+
+  const handleBidConfirm = (amount: number) => {
+    // Validate bid amount
+    if (amount < currentBid + bidIncrement) {
+      setBidError(`Bid must be at least $${(currentBid + bidIncrement).toLocaleString()}`)
+      return
+    }
+
+    // Add bid to history
+    setBidHistory(prev => [...prev, { amount, timestamp: new Date() }])
+    
+    // In a real app, submit bid to server
+    console.log(`Placing bid: $${amount}`)
+    
+    setShowConfirmDialog(false)
+    setBidError("")
+  }
+
+  const handleAutoBidToggle = (enabled: boolean) => {
+    setAutoBidEnabled(enabled)
+    setIsAutoBidding(enabled)
   }
 
   return (
@@ -88,30 +154,34 @@ export default function BidControls({ currentBid, bidIncrement, onBidIncrementCh
               <Label htmlFor="custom-bid" className="text-sm text-slate-500">
                 Enter your bid amount
               </Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  id="custom-bid"
-                  type="number"
-                  min={currentBid + bidIncrement}
-                  step={50}
-                  value={customBid}
-                  onChange={(e) => setCustomBid(Number(e.target.value))}
-                  className="bg-white border-slate-200 text-slate-800 focus:border-blue-500"
-                />
-                <Button
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                  onClick={handleCustomBid}
-                >
-                  Bid
-                </Button>
+              <div className="flex gap-2 mt-1 flex-col">
+                <div className="flex gap-2">
+                  <Input
+                    id="custom-bid"
+                    type="number"
+                    min={currentBid + bidIncrement}
+                    step={50}
+                    value={customBid}
+                    onChange={handleCustomBidChange}
+                    className="bg-white border-slate-200 text-slate-800 focus:border-blue-500"
+                  />
+                  <Button
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                    onClick={handleCustomBid}
+                    disabled={customBid < currentBid + bidIncrement}
+                  >
+                    Bid
+                  </Button>
+                </div>
+                {bidError && <p className="text-red-500 text-xs">{bidError}</p>}
+                <p className="text-xs text-slate-500">
+                  Minimum bid: ${(currentBid + bidIncrement).toLocaleString()}
+                </p>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Minimum bid: ${(currentBid + bidIncrement).toLocaleString()}
-              </p>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="auto-bid" checked={autoBidEnabled} onCheckedChange={setAutoBidEnabled} />
+              <Switch id="auto-bid" checked={autoBidEnabled} onCheckedChange={handleAutoBidToggle} />
               <Label htmlFor="auto-bid" className="flex items-center text-slate-800">
                 <Zap className="h-4 w-4 mr-2 text-yellow-500" />
                 Auto-bid until my maximum
@@ -167,6 +237,43 @@ export default function BidControls({ currentBid, bidIncrement, onBidIncrementCh
           </div>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Your Bid</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to place a bid of ${pendingBid.toLocaleString()}?
+              {timeLeft && timeLeft < 60 && (
+                <p className="text-red-500 mt-2">
+                  Warning: Less than 1 minute remaining!
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleBidConfirm(pendingBid)}>
+              Confirm Bid
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add bid history display */}
+      {bidHistory.length > 0 && (
+        <div className="mt-4 border-t pt-4">
+          <h3 className="text-sm font-medium text-slate-800">Your Bid History</h3>
+          <div className="mt-2 space-y-2">
+            {bidHistory.slice(-3).map((bid, index) => (
+              <div key={index} className="text-xs text-slate-500 flex justify-between">
+                <span>${bid.amount.toLocaleString()}</span>
+                <span>{bid.timestamp.toLocaleTimeString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

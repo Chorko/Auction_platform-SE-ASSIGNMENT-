@@ -26,9 +26,10 @@ import WatchlistItems from "@/components/watchlist-items"
 import RecommendedAuctions from "@/components/recommended-auctions"
 import BidHistoryTable from "@/components/bid-history-table"
 
-export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [chartType, setChartType] = useState("area")
+
+export default function DashboardPage(): JSX.Element {
+  const [activeTab] = useState("overview")
+  const [chartType, setChartType] = useState<"area" | "bar" | "line" | "pie">("area")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
@@ -279,7 +280,7 @@ export default function DashboardPage() {
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
-                  <Tabs value={chartType} onValueChange={setChartType}>
+                  <Tabs value={chartType} onValueChange={(value: string) => setChartType(value as "area" | "bar" | "line" | "pie")}>
                     <TabsList className="bg-slate-100 border border-slate-200">
                       <TabsTrigger
                         value="area"
